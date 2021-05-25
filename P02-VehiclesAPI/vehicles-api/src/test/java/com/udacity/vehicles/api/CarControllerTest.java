@@ -96,7 +96,12 @@ public class CarControllerTest {
          *   the whole list of vehicles. This should utilize the car from `getCar()`
          *   below (the vehicle will be the first in the list).
          */
-
+        Car car = carService.save(getCar());
+        mvc.perform(
+                get(new URI("/cars")))
+                .andExpect(status().isOk());
+                //.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+                //.andExpect(content().json(json.write(car).getJson())
     }
 
     /**
@@ -109,6 +114,13 @@ public class CarControllerTest {
          * TODO: Add a test to check that the `get` method works by calling
          *   a vehicle by ID. This should utilize the car from `getCar()` below.
          */
+        Car car = carService.save(getCar());
+        mvc.perform(
+                get(new URI("/cars/" + car.getId())))
+                    .andExpect(status().isOk())
+                    //.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(content().json(json.write(car).getJson()));
+
     }
 
     /**
@@ -122,6 +134,14 @@ public class CarControllerTest {
          *   when the `delete` method is called from the Car Controller. This
          *   should utilize the car from `getCar()` below.
          */
+        Car car = carService.save(getCar());
+        mvc.perform(
+                delete(new URI("/cars/" + car.getId())))
+                    .andExpect(status().is2xxSuccessful());
+
+//        mvc.perform(
+//                get(new URI("/cars/" + car.getId())))
+//                    .andExpect(status().isNotFound());
     }
 
     /**
