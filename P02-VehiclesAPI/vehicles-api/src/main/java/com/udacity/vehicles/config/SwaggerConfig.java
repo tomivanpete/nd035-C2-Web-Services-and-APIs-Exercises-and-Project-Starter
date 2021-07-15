@@ -30,7 +30,7 @@ public class SwaggerConfig {
     private ApiInfo apiInfo() {
         return new ApiInfo(
                 "Vehicles API",
-                "This API returns information about cars.",
+                "A Restful API for vehicles.",
                 "1.0",
                 null,
                 new Contact("Thomas Peters", "https://www.github.com/tomivanpete", "thomas.ivan.peters@gmail.com"),
