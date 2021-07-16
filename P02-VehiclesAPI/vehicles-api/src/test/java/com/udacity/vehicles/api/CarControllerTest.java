@@ -1,9 +1,10 @@
 package com.udacity.vehicles.api;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -77,12 +78,14 @@ public class CarControllerTest {
     @Test
     public void createCar() throws Exception {
         Car car = getCar();
+
         mvc.perform(
                 post(new URI("/cars"))
                         .content(json.write(car).getJson())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isCreated());
+        verify(carService, times(1)).save(any());
     }
 
     /**
@@ -92,16 +95,23 @@ public class CarControllerTest {
     @Test
     public void listCars() throws Exception {
         /**
-         * TODO: Add a test to check that the `get` method works by calling
+         * DONE: Add a test to check that the `get` method works by calling
          *   the whole list of vehicles. This should utilize the car from `getCar()`
          *   below (the vehicle will be the first in the list).
          */
-        Car car = carService.save(getCar());
+        Car car = getCar();
+
         mvc.perform(
                 get(new URI("/cars")))
-                .andExpect(status().isOk());
-                //.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
-                //.andExpect(content().json(json.write(car).getJson())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$..carList").exists())
+                .andExpect(jsonPath("$..carList", hasSize(1)))
+                .andExpect(jsonPath("$..carList[0].condition", hasItem(car.getCondition().name())))
+                .andExpect(jsonPath("$..carList[0].details.body", hasItem(car.getDetails().getBody())))
+                .andExpect(jsonPath("$..carList[0].details.model", hasItem(car.getDetails().getModel())))
+                .andExpect(jsonPath("$..carList[0].details.manufacturer.code", hasItem(car.getDetails().getManufacturer().getCode())));
+
+        verify(carService, times(1)).list();
     }
 
     /**
@@ -111,16 +121,16 @@ public class CarControllerTest {
     @Test
     public void findCar() throws Exception {
         /**
-         * TODO: Add a test to check that the `get` method works by calling
+         * DONE: Add a test to check that the `get` method works by calling
          *   a vehicle by ID. This should utilize the car from `getCar()` below.
          */
         Car car = carService.save(getCar());
         mvc.perform(
                 get(new URI("/cars/" + car.getId())))
                     .andExpect(status().isOk())
-                    //.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(content().json(json.write(car).getJson()));
 
+        verify(carService, times(1)).findById(car.getId());
     }
 
     /**
@@ -130,7 +140,7 @@ public class CarControllerTest {
     @Test
     public void deleteCar() throws Exception {
         /**
-         * TODO: Add a test to check whether a vehicle is appropriately deleted
+         * DONE: Add a test to check whether a vehicle is appropriately deleted
          *   when the `delete` method is called from the Car Controller. This
          *   should utilize the car from `getCar()` below.
          */
@@ -139,9 +149,7 @@ public class CarControllerTest {
                 delete(new URI("/cars/" + car.getId())))
                     .andExpect(status().is2xxSuccessful());
 
-//        mvc.perform(
-//                get(new URI("/cars/" + car.getId())))
-//                    .andExpect(status().isNotFound());
+        verify(carService, times(1)).delete(car.getId());
     }
 
     /**
