@@ -8,6 +8,7 @@ import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -85,7 +86,28 @@ public class CarControllerTest {
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isCreated());
+
         verify(carService, times(1)).save(any());
+    }
+
+    /**
+     * Tests for successful update of an existing car in the system
+     * @throws Exception when the car update fails in the system
+     */
+    @Test
+    public void updateCar() throws Exception {
+        Car car = carService.save(getCar());
+        car.setCondition(Condition.NEW);
+
+        mvc.perform(
+                put(new URI("/cars/" + car.getId()))
+                    .content(json.write(car).getJson())
+                    .contentType(MediaType.APPLICATION_JSON_UTF8)
+                    .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$..condition", hasItem(car.getCondition().name())));
+
+        verify(carService, times(2)).save(any());
     }
 
     /**
